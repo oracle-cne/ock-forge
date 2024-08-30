@@ -1,0 +1,133 @@
+#! /bin/bash
+set -x
+set -e
+
+DEVICE=
+DISK=
+FILESYSTEM=xfs
+IMAGE=
+CONFIG_DIR=
+CONFIGS_DIR=./configs
+OSTREE_IMAGE_PATH=
+CLEAN=yes
+PARTITION=
+SOURCE=
+BRANCH=
+
+OS_NAME=ock
+
+BUILD_IMAGE=ock-builder:latest
+
+while true; do
+	case "$1" in
+	"") break;;
+	-d | --device ) DEVICE="$2"; shift; shift ;;
+	-D | --disk ) DISK="$2"; shift; shift ;;
+	-f | --filesystem ) FILESYSTEM="$2"; shift; shift ;;
+	-s | --source ) SOURCE="$2"; shift; shift; ;;
+	-b | --branch ) BRANCH="$2"; shift; shift ;;
+	-i | --image ) IMAGE="$2"; shift; shift ;;
+	-c | --config-dir ) CONFIG_DIR="$2"; shift; shift ;;
+	-C | --configs-dir ) CONFIGS_DIR="$2"; shift; shift ;;
+	-o | --os-name ) OS_NAME="$2"; shift; shift ;;
+	-n | --no-clean ) CLEAN=; shift; shift ;;
+	-O | --ostree-image-path ) OSTREE_IMAGE_PATH="$2"; shift; shift ;;
+	-P | --partition ) PARTITION=yes; shift ;;
+	esac
+done
+
+if [[ -z "$DEVICE" ]]; then
+	echo "A device is required"
+	exit 1
+fi
+
+if [[ -z "$FILESYSTEM" ]]; then
+	echo "A filesystem is required"
+	exit 1
+fi
+
+if [[ -z "$IMAGE" && -z "$CONFIG_DIR" ]]; then
+	echo "A container image or treefile is required"
+	exit 1
+fi
+
+if [[ -n "$SOURCE" ]]; then
+	./copy-source.sh -s "$SOURCE" -t "$CONFIGS_DIR" -b "$BRANCH"
+fi
+
+TMPDIR=$(realpath $(mktemp -d -p .))
+
+OSTREE_IMAGE_DIR=
+OSTREE_IMAGE_NAME=
+if [[ -n "$OSTREE_IMAGE_PATH" ]]; then
+	OSTREE_IMAGE_DIR=$(dirname "$OSTREE_IMAGE_PATH")
+	OSTREE_IMAGE_NAME=$(basename "$OSTREE_IMAGE_PATH")
+fi
+
+# If the builder container image does not exist, build it.
+if ! podman image exists "$BUILD_IMAGE"; then
+	if [ ! -f build-image/rpm-ostree-2024.3-4.el9.x86_64.rpm ]; then
+		./build-rpmostree.sh ./build-image
+	fi
+	pushd build-image
+	podman build -t "$BUILD_IMAGE" .
+	popd
+fi
+
+# If a disk is passed in and that disk is a qcow image,
+# create the disk and attached to an nbd.  If it's an iso,
+# set up a loopback device.
+if [[ "$DISK" =~ ".qcow" ]]; then
+	./setup-vm-disk.sh -d "$DEVICE" -D "$DISK"
+elif [[ "$DISK" =~ ".iso" ]]; then
+	truncate --size=15G "$DISK"
+
+	# loopback devices must be partitioned as files
+	# before attaching them via the loopback driver.
+	# Do that now, then unset the partition flag so
+	# that it's not partitioned later
+	if [[ -n "$PARTITION" ]]; then
+		./make-partitions.sh -d "$DISK" -f "$FILESYSTEM"
+		PARTITION=""
+	fi
+
+	losetup -P "$DEVICE" "$DISK"
+fi
+
+# If desired, lay down the partition table
+if [[ -n "$PARTITION" ]]; then
+	./make-partitions.sh -d "$DEVICE" -f "$FILESYSTEM"
+fi
+
+# Install the OS and generate an ostree image with the same contents
+podman run --privileged -ti --rm \
+	--mount type=bind,source="${TMPDIR}",target=/var/tmp,relabel=shared \
+	-v "$OSTREE_IMAGE_DIR":/out \
+	-v "$CONFIGS_DIR":/configs "$BUILD_IMAGE" \
+	-d "$DEVICE" -F \
+	-m /mnt \
+	-f "$FILESYSTEM" \
+	-i "$IMAGE" \
+	-c /configs/"$CONFIG_DIR" \
+	-o "$OS_NAME" \
+	-O "$OSTREE_IMAGE_NAME"
+
+# If an archive of an ostree container image was desired, unpack
+# it into the local image cache.
+if [[ -n "$OSTREE_IMAGE_PATH" ]]; then
+	gunzip -c "$OSTREE_IMAGE_PATH" | podman load
+	rm -f "$OSTREE_IMAGE_PATH"
+fi
+
+if [[ -n "$CLEAN" ]]; then
+	rm -rf "$TMPDIR"
+
+	# If there was a qcow disk being made and this script
+	# plumbed up the nbd, unplumb it.  Same if it is an iso.
+	if [[ "$DISK" =~ "qcow" ]]; then
+		qemu-nbd --disconnect "$DEVICE"
+		./sparsify-image.sh -D "$DISK"
+	elif [[ "$DISK" =~ ".iso" ]]; then
+		losetup -d "$DEVICE"
+	fi
+fi
