@@ -11,7 +11,7 @@ set -e
 # Set up RPM build environment
 dnf install -y rpmdevtools rpm-build
 rpmdev-setuptree
-dnf download --source rpm-ostree
+dnf download --source rpm-ostree-2024.3-4.el9_4
 rpm -U ./rpm-ostree-*.src.rpm
 
 # apply necessary patches
