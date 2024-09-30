@@ -3,20 +3,28 @@
 ock-forge is a tool that builds bootable media for Oracle Container Host for
 Kubernetes based on a treefile-based configuration.  It supports generating
 virtual machine images via the qcow2 format, raw disk images, or writing
-directoy to an existing block device.
+directory to an existing block device.
 
 # Requirements
 
 ## Operating System
 
 This project is intended to build on Oracle Linux 9.  It is likely that you
-will find success with any other Linux distrubtion as well.
+will find success with any other Linux distribution as well.
 
 ## Privilege
 
 Many steps of the build process require considerable privilege.  It is
 highly recommend to build this project as root.  You may find some success
 with `sudo` if you know what you're doing.
+
+## Additional Software
+
+Podman is required to use the tool.  If this tool is being used on an Oracle
+Linux system, refer to the [Podman Installation Guide](https://docs.oracle.com/en/operating-systems/oracle-linux/podman/podman-InstallingPodmanandRelatedUtilities.html#podman-install)
+When building qcow2 images, the `qemu-img` utility is leveraged to manipulate
+the image.  When building these kind of images, `qemu-img` must be installed.
+On Oracle Linux systems it can be installed via `dnf install qemu-img`.
 
 # Using the Image Builder
 
@@ -79,6 +87,17 @@ ock-forge
   entirely.  If given with -c as well as -O, it is used to generate an ostree
   container image that can be used for later installations or upgrades.
 
+ -s | --source *URI*
+
+  The URI of an OCK configuration.  The configuration is copied from this
+  location into the value of the `-C` argument. If the URI ends with `.git`,
+  the assumption is that it refers to a Git repository.  Otherwise, the URI
+  is assumed to refer to a directory on the local filesystem.
+
+ -b | --branch
+
+  If `-s` refers to a Git repository, check out this branch after cloning.
+
  -C | --configs-dir *path*
 
   A directory containing a set of rpm-ostree configurations.
@@ -129,7 +148,33 @@ to fill the entire disk when the OS boots for the first time.  There are other
 functional layouts, but these have limited applicability and require a good
 understanding of how partitions are laid out and used.
 
+### Configurations
+
+`ock-forge` builds media from an [rpm-ostree treefile](https://coreos.github.io/rpm-ostree/treefile).
+While it can build an arbitrary treefile, it is intended for use with Oracle
+Container Host for Kubernetes (OCK).  The configurations for OCK can be found
+at https://github.com/oracle-cne/ock.
+
 ### Examples
+
+These examples assume that you have either tried the first example, or cloned
+the OCK GitHub repository into your working directory with a folder named "ock".
+
+The OCK configuration can be cloned like so:
+```
+# git clone https://github.com/oracle-cne/ock
+```
+
+#### Building From Git
+
+`ock-forge` can copy configurations from inconventient places to more
+convenient places.  This command builds a qcow2 and ostree image from scratch
+using the OCK GitHub repository as a source of truth.  The clone of repository
+is retained so it can be reused in later invocations.
+
+```
+# ./ock-forge -d /dev/nbd0 -D out/1.30/boot.qcow2 -i container-registry.oracle.com/olcne/ock-ostree:1.30 -O ./out/1.30/archive.tar -C ./ock -c configs/config-1.30 -P -s https://github.com/oracle-cne/ock.git
+```
 
 #### A Typical Build
 
@@ -139,7 +184,7 @@ attach it as a block device, partition the disk, format the partitions, install
 the OS, and generate an ostree archive.
 
 ```
-# ock-forge -d /dev/nbd0 -D out/1.30/boot.qcow2 -i container-registry.oracle.com/olcne/ock-ostree:1.30 -O ./out/1.30/archive.tar -C ./configs -c config-1.30 -P
+# ock-forge -d /dev/nbd0 -D out/1.30/boot.qcow2 -i container-registry.oracle.com/olcne/ock-ostree:1.30 -O ./out/1.30/archive.tar -C ./ock -c configs/config-1.30 -P
 ```
 
 #### A Typical Build, But With a Raw Disk
@@ -149,7 +194,7 @@ a raw disk image rather than a qcow2.  The generated image can be dd'ed onto a
 physical disk and used to boot a system directly.
 
 ```
-# ock-forge -d /dev/loop0 -D out/1.30/boot.iso -i container-registry.oracle.com/olcne/ock-ostree:1.30 -O ./out/1.30/archive.tar -C ./configs -c config-1.30 -P
+# ock-forge -d /dev/loop0 -D out/1.30/boot.iso -i container-registry.oracle.com/olcne/ock-ostree:1.30 -O ./out/1.30/archive.tar -C ./ock -c configs/config-1.30 -P
 ```
 
 #### Install to a Physical Disk
@@ -157,7 +202,7 @@ physical disk and used to boot a system directly.
 Install to a physical block device, creating partitions.
 
 ```
-# ock-forge -d /dev/sdb -i container-registry.oracle.com/olcne/ock-ostree:1.30 -O ./out/1.30/archive.tar -C ./configs -c config-1.30 -P
+# ock-forge -d /dev/sdb -i container-registry.oracle.com/olcne/ock-ostree:1.30 -O ./out/1.30/archive.tar -C ./ock -c configs/config-1.30 -P
 ```
 
 #### Install but don't Generate an Ostree Archive
@@ -166,7 +211,7 @@ Perform a fresh installation of the OS, but do not store the contents in an
 ostree container image archive.
 
 ```
-# ock-forge -d /dev/sdb -C ./configs -c config-1.30 -P
+# ock-forge -d /dev/nbd0 -C ./ock -c configs/config-1.30 -P
 ```
 
 #### Install from a Container Image
@@ -174,7 +219,7 @@ ostree container image archive.
 Install using an existing ostree container image as a source.
 
 ```
-# ock-forge -d /dev/sdb -i container-registry.oracle.com/olcne/ock-ostree:1.30 -P
+# ock-forge -d /dev/nbd0 -d /dev/loop0 -D out/1.30/boot.iso -i container-registry.oracle.com/olcne/ock-ostree:1.30 -P
 ```
 
 ## Other Utilities
