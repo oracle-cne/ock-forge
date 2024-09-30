@@ -3,14 +3,14 @@
 ock-forge is a tool that builds bootable media for Oracle Container Host for
 Kubernetes based on a treefile-based configuration.  It supports generating
 virtual machine images via the qcow2 format, raw disk images, or writing
-directoy to an existing block device.
+directory to an existing block device.
 
 # Requirements
 
 ## Operating System
 
 This project is intended to build on Oracle Linux 9.  It is likely that you
-will find success with any other Linux distrubtion as well.
+will find success with any other Linux distribution as well.
 
 ## Privilege
 
@@ -20,11 +20,11 @@ with `sudo` if you know what you're doing.
 
 ## Additional Software
 
-Podman is required to use the tool.  On Oracle Linux systems it can be installed
-via `dnf install podman`.  When building qcow2 images, the `qemu-img` utility is
-leveraged to manipulate the image.  When building these kind of images,
-`qemu-img` must be installed.  On Oracle Linux systems it can beinstall via
-`dnf install qemu-img`.
+Podman is required to use the tool.  If this tool is being used on an Oracle
+Linux system, refer to the [Podman Installation Guide](https://docs.oracle.com/en/operating-systems/oracle-linux/podman/podman-InstallingPodmanandRelatedUtilities.html#podman-install)
+When building qcow2 images, the `qemu-img` utility is leveraged to manipulate
+the image.  When building these kind of images, `qemu-img` must be installed.
+On Oracle Linux systems it can be installed via `dnf install qemu-img`.
 
 # Using the Image Builder
 
