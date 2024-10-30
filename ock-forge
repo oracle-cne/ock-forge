@@ -76,7 +76,7 @@ if [[ -n "$SOURCE" ]]; then
 	./copy-source.sh -s "$SOURCE" -t "$CONFIGS_DIR" -b "$BRANCH"
 fi
 
-TMPDIR=$(realpath $(mktemp -d -p .))
+TMPDIR=$(realpath $(mktemp -d))
 
 OSTREE_IMAGE_DIR=
 OSTREE_IMAGE_NAME=
