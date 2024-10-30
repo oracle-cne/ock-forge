@@ -67,7 +67,6 @@ SYSROOT="${DEPLOY}/sysroot"
 # - fstab
 # - tmpfs
 # - bootloader config
-# - set selinux permissive for now
 
 cat > "$DEPLOY/etc/fstab" << EOF
 UUID=$ROOT_FILESYSTEM_UUID / $FILESYSTEM defaults 0 0
@@ -86,8 +85,6 @@ GRUB_CMDLINE_LINUX="rw ip=dhcp rd.neednet=1 ignition.platform.id=qemu ignition.f
 GRUB_DISABLE_RECOVERY="true"
 GRUB_ENABLE_BLSCFG=true
 EOF
-
-sed -i 's/SELINUX=enforcing/SELINUX=permissive/' "${DEPLOY}/etc/selinux/config"
 
 # Install the bootloader
 

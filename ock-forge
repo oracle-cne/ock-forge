@@ -5,6 +5,8 @@
 set -x
 set -e
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 DEVICE=
 DISK=
 FILESYSTEM=xfs
@@ -54,6 +56,22 @@ if [[ -z "$IMAGE" && -z "$CONFIG_DIR" ]]; then
 	exit 1
 fi
 
+# Fully qualify all paths so it is possible to change directory
+if [[ -n "$SOURCE" ]]; then
+	SOURCE=$(realpath -m "$SOURCE")
+fi
+if [[ -n "$DISK" ]]; then
+	DISK=$(realpath -m "$DISK")
+fi
+if [[ -n "$CONFIGS_DIR" ]]; then
+	CONFIGS_DIR=$(realpath -m "$CONFIGS_DIR")
+fi
+if [[ -n "$OSTREE_IMAGE_PATH" ]]; then
+	OSTREE_IMAGE_PATH=$(realpath -m "$OSTREE_IMAGE_PATH")
+fi
+
+pushd "$SCRIPT_DIR"
+
 if [[ -n "$SOURCE" ]]; then
 	./copy-source.sh -s "$SOURCE" -t "$CONFIGS_DIR" -b "$BRANCH"
 fi
@@ -82,6 +100,10 @@ fi
 # set up a loopback device.
 if [[ "$DISK" =~ ".qcow" ]]; then
 	./setup-vm-disk.sh -d "$DEVICE" -D "$DISK"
+
+	if [[ -n "$SUDO_UID" && -n "$SUDO_GID" ]]; then
+		chown "${SUDO_UID}:${SUDO_GID}" "$DISK"
+	fi
 elif [[ "$DISK" =~ ".iso" ]]; then
 	truncate --size=15G "$DISK"
 
@@ -95,6 +117,10 @@ elif [[ "$DISK" =~ ".iso" ]]; then
 	fi
 
 	losetup -P "$DEVICE" "$DISK"
+
+	if [[ -n "$SUDO_UID" && -n "$SUDO_GID" ]]; then
+		chown "${SUDO_UID}:${SUDO_GID}" "$DISK"
+	fi
 fi
 
 # If desired, lay down the partition table
@@ -134,3 +160,5 @@ if [[ -n "$CLEAN" ]]; then
 		losetup -d "$DEVICE"
 	fi
 fi
+
+popd
