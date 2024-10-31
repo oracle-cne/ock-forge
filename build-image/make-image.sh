@@ -63,3 +63,8 @@ fi
 ./make-mounts.sh -d "$DEVICE" -m "$MOUNT"
 ./deploy-ostree.sh -d "$DEVICE" -m "$MOUNT" -i "$IMAGE" -c "$CONFIG_DIR" -o "$OS_NAME" -O "$OSTREE_IMAGE_PATH"
 ./install-bootloader.sh -d "$DEVICE" -m "$MOUNT" -o "$OS_NAME"  -f "$FILESYSTEM"
+
+# Make sure that the filesystems are synced before the container exits
+umount "$MOUNT/boot/efi"
+umount "$MOUNT/boot"
+sync
