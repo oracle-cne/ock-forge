@@ -89,11 +89,11 @@ fi
 # If the builder container image does not exist, build it.
 if ! podman image exists "$BUILD_IMAGE"; then
 	if ! podman pull "$BUILD_IMAGE"; then
-		if [ ! -f build-image/rpm-ostree-2024.3-4.el9.x86_64.rpm ]; then
+		if [ ! -f build-image/rpm-ostree-2024.3-4.el9.$(uname -m).rpm ]; then
 			./build-rpmostree.sh ./build-image
 		fi
 		pushd build-image
-		podman build -t "$BUILD_IMAGE" .
+		podman build --build-arg ARCH=$(uname -m) -t "$BUILD_IMAGE" .
 		popd
 	fi
 fi
