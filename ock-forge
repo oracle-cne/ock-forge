@@ -58,9 +58,6 @@ if [[ -z "$IMAGE" && -z "$CONFIG_DIR" ]]; then
 fi
 
 # Fully qualify all paths so it is possible to change directory
-if [[ -n "$SOURCE" ]]; then
-	SOURCE=$(realpath -m "$SOURCE")
-fi
 if [[ -n "$DISK" ]]; then
 	DISK=$(realpath -m "$DISK")
 fi
@@ -71,11 +68,14 @@ if [[ -n "$OSTREE_IMAGE_PATH" ]]; then
 	OSTREE_IMAGE_PATH=$(realpath -m "$OSTREE_IMAGE_PATH")
 fi
 
-pushd "$SCRIPT_DIR"
 
+# Run this before the pushd so that SOURCE does not have to be dereferenced.
+# This makes it easier to account for non-filesystem sources like Git repos.
 if [[ -n "$SOURCE" ]]; then
-	./copy-source.sh -s "$SOURCE" -t "$CONFIGS_DIR" -b "$BRANCH"
+	${SCRIPT_DIR}/copy-source.sh -s "$SOURCE" -t "$CONFIGS_DIR" -b "$BRANCH"
 fi
+
+pushd "$SCRIPT_DIR"
 
 TMPDIR=$(realpath $(mktemp -d))
 
