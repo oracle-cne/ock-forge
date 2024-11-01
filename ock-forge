@@ -38,6 +38,7 @@ while true; do
 	-n | --no-clean ) CLEAN=; shift; shift ;;
 	-O | --ostree-image-path ) OSTREE_IMAGE_PATH="$2"; shift; shift ;;
 	-P | --partition ) PARTITION=yes; shift ;;
+	-B | --build-image ) BUILD_IMAGE="$2"; shift; shift ;;
 	esac
 done
 
@@ -87,12 +88,14 @@ fi
 
 # If the builder container image does not exist, build it.
 if ! podman image exists "$BUILD_IMAGE"; then
-	if [ ! -f build-image/rpm-ostree-2024.3-4.el9.x86_64.rpm ]; then
-		./build-rpmostree.sh ./build-image
+	if ! podman pull "$BUILD_IMAGE"; then
+		if [ ! -f build-image/rpm-ostree-2024.3-4.el9.x86_64.rpm ]; then
+			./build-rpmostree.sh ./build-image
+		fi
+		pushd build-image
+		podman build -t "$BUILD_IMAGE" .
+		popd
 	fi
-	pushd build-image
-	podman build -t "$BUILD_IMAGE" .
-	popd
 fi
 
 # If a disk is passed in and that disk is a qcow image,
