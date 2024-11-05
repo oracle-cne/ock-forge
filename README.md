@@ -1,16 +1,15 @@
 # ock-forge - The Oracle Container Host for Kubernetes Builder
 
-ock-forge is a tool that builds bootable media for Oracle Container Host for
+ock-forge is a tool that builds boot media for Oracle Container Host for
 Kubernetes based on a treefile-based configuration.  It supports generating
-virtual machine images via the qcow2 format, raw disk images, or writing
+bootable media via the qcow2 format, raw disk images, or writing
 directory to an existing block device.
 
 # Requirements
 
 ## Operating System
 
-This project is intended to build on Oracle Linux 9.  It is likely that you
-will find success with any other Linux distribution as well.
+This project is intended to build on Oracle Linux 8 and 9.
 
 ## Privilege
 
@@ -26,21 +25,21 @@ When building qcow2 images, the `qemu-img` utility is leveraged to manipulate
 the image.  When building these kind of images, `qemu-img` must be installed.
 On Oracle Linux systems it can be installed via `dnf install qemu-img`.
 
-# Using the Image Builder
+# Using `ock-forge`
 
 ock-forge is a set of shell scripts broken up into logical operations
-that can be used and edited as necessary.  If the image is being deployed to
+that can be used and edited as necessary.  If boot media is being deployed to
 a host with a simple disk geometry (which is the recommended way to deploy
 OCK) then the top level command, `ock-forge`, can be used.
 
 ## `ock-forge`
 
-The `ock-forge` command performs all the work required to generate a bootable
-OCK image assuming that the target is a single block device using the
-standard partition layout.  It can generate images three ways: creating and
+The `ock-forge` command performs all the work required to generate 
+OCK boot media assuming that the target is a single block device using the
+standard partition layout.  It can generate boot media three ways: creating and
 installing to a qcow2 image, creating and installing to a raw iso, and
 installing to an arbitrary paritionable block device (read: physical disk).
-In addition to generating the image, it creates a container image containing
+In addition to generating the boot media, it creates a container image containing
 the ostree contents for the build.  This container image is useful for updating
 existing hosts in-place.
 
