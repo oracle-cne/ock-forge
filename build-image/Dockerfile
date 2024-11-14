@@ -17,6 +17,6 @@ RUN dnf install --enablerepo='*' /rpm-ostree* && \
 		crypto-policies-scripts && \
     update-crypto-policies --set DEFAULT:SHA1
 
-ADD deploy-ostree.sh install-bootloader.sh make-image.sh make-mounts.sh format-disk.sh /
+ADD deploy-ostree.sh install-bootloader.sh make-image.sh make-mounts.sh format-disk.sh embed-ignition.sh /
 
 ENTRYPOINT ["/make-image.sh"]

@@ -11,7 +11,7 @@ IMAGE=
 CONFIG_DIR=
 
 SKOPEO_TRANSPORT="oci-archive"
-OSTREE_TRANSPORT="ostree-unverified-image"
+OSTREE_TRANSPORT="ostree-unverified-registry"
 OSTREE_IMAGE_PATH=
 
 while true; do

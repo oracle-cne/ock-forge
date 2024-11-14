@@ -13,6 +13,8 @@ CONFIG_DIR=
 CLEAN=yes
 OSTREE_IMAGE_PATH=
 FORMAT_DISK=
+IGNITION=
+IGNITION_PROVIDER=
 
 OS_NAME=ock
 
@@ -30,6 +32,8 @@ while true; do
 	-n | --no-clean ) CLEAN=; shift ;;
 	-O | --ostree-image-path ) OSTREE_IMAGE_PATH="/out/$2"; shift; shift ;;
 	-F | --format-disk ) FORMAT_DISK=yes; shift ;;
+	-I | --ignition ) IGNITION="$2"; shift; shift ;;
+	-p | --provider ) IGNITION_PROVIDER="$2"; shift; shift ;;
 	* ) echo "$1 is not a valid agument"; exit 1 ;;
 	esac
 done
@@ -62,7 +66,7 @@ fi
 
 ./make-mounts.sh -d "$DEVICE" -m "$MOUNT"
 ./deploy-ostree.sh -d "$DEVICE" -m "$MOUNT" -i "$IMAGE" -c "$CONFIG_DIR" -o "$OS_NAME" -O "$OSTREE_IMAGE_PATH"
-./install-bootloader.sh -d "$DEVICE" -m "$MOUNT" -o "$OS_NAME"  -f "$FILESYSTEM"
+./install-bootloader.sh -d "$DEVICE" -m "$MOUNT" -o "$OS_NAME"  -f "$FILESYSTEM" -I "$IGNITION" -p "$IGNITION_PROVIDER"
 
 # Make sure that the filesystems are synced before the container exits
 umount "$MOUNT/boot/efi"

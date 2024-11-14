@@ -9,6 +9,8 @@ DEVICE=
 MOUNT=
 FILESYSTEM=xfs
 OS_NAME=ock
+IGNITION=
+IGNITION_PROVIDER=
 
 mount_rbind() {
 	root="$1"
@@ -29,6 +31,8 @@ while true; do
 	-m | --mount ) MOUNT="$2"; shift; shift ;;
 	-f | --filesystem ) FILESYSTEM="$2"; shift; shift ;;
 	-o | --os-name ) OS_NAME="$2"; shift; shift ;;
+	-I | --ignition ) IGNITION="$2"; shift; shift ;;
+	-p | --provider ) IGNITION_PROVIDER="$2"; shift; shift ;;
 	esac
 done
 
@@ -81,7 +85,7 @@ GRUB_DEFAULT=saved
 GRUB_DISABLE_SUBMENU=true
 GRUB_TERMINAL="serial console"
 GRUB_SERIAL_COMMAND="serial"
-GRUB_CMDLINE_LINUX="rw ip=dhcp rd.neednet=1 ignition.platform.id=qemu ignition.firstboot=1 crashkernel=auto console=ttyS0"
+GRUB_CMDLINE_LINUX="rw ip=dhcp rd.neednet=1 ignition.platform.id=${IGNITION_PROVIDER} ignition.firstboot=1 crashkernel=auto console=ttyS0"
 GRUB_DISABLE_RECOVERY="true"
 GRUB_ENABLE_BLSCFG=true
 EOF
@@ -119,11 +123,16 @@ OSTREE_PATH=$(echo ${MOUNT}/ostree/boot.1/ock/*/0 | tail -c +$(echo -n ${MOUNT}/
 cat > "$MOUNT/boot/loader/entries/ostree-1-ock.conf" << EOF
 title Oracle Linux Server 8.10 17 (ostree:0)
 version 1
-options rw ip=dhcp rd.neednet=1 ignition.platform.id=qemu ignition.firstboot=1 crashkernel=auto console=ttyS0 root=UUID=${ROOT_FILESYSTEM_UUID} ostree=${OSTREE_PATH} rd.timeout=120
+options rw ip=dhcp rd.neednet=1 ignition.platform.id=${IGNITION_PROVIDER} ignition.firstboot=1 crashkernel=auto console=ttyS0 root=UUID=${ROOT_FILESYSTEM_UUID} ostree=${OSTREE_PATH} rd.timeout=120
 linux ${KERNEL_PATH_REL}
 initrd ${INITRAMFS_PATH_REL}
 EOF
 
 cat /usr/lib/bootupd/grub2-static/grub-static-pre.cfg /usr/lib/bootupd/grub2-static/grub-static-efi.cfg /usr/lib/bootupd/grub2-static/grub-static-post.cfg > "${MOUNT}/boot/efi/EFI/redhat/grub.cfg"
+
+# If there is an ignition file, embed it into the initramfs
+if [ -n "$IGNITION" ]; then
+	./embed-ignition.sh -I "$IGNITION" -i "$INITRAMFS_PATH"
+fi
 
 rm -rf "${DEPLOY}/sysroot/tmp/*"
