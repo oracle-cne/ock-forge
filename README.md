@@ -51,17 +51,6 @@ These are the arguments for `ock-forge`:
 ```
 ock-forge
 
- -s | --source *URI*
-
-  A path to either a Git repository or a directory.  The contents of the
-  location is copied to the build directory.  If this option is omitted,
-  the existing configuration is used.
-
- -b | --branch *branch-name*
-
-  The name of a Git branch.  If this option is given, the indicated branch
-  is cloned.  Without this option, the default branch is cloned.
-
  -d | --device *block-device*
 
   The path to an existing block device.  This device is the installation target.
@@ -92,11 +81,13 @@ ock-forge
   The URI of an OCK configuration.  The configuration is copied from this
   location into the value of the `-C` argument. If the URI ends with `.git`,
   the assumption is that it refers to a Git repository.  Otherwise, the URI
-  is assumed to refer to a directory on the local filesystem.
+  is assumed to refer to a directory on the local filesystem.  If this option
+  is omitted, the existing configuration is used.
 
- -b | --branch
+ -b | --branch *branch*
 
-  If `-s` refers to a Git repository, check out this branch after cloning.
+  If `-s` refers to a Git repository, clone this branch.  Without this option
+  the default branch is cloned.
 
  -C | --configs-dir *path*
 
@@ -131,6 +122,21 @@ ock-forge
 
   If this option is provided, the block device specified by -d will have its
   partition table wiped and repopulated with the default geometry.
+
+ -p | --provider *ignition-provider*
+
+  Set the ignition provider.  The default value is 'qemu'.  If -I is used to
+  embed an ignition file, the default value is 'file'.
+
+ -I | --ignition *path*
+
+  The path to an ignition file.  This file is embeded into the initramfs on
+  the deployment.  If -p is not given, the ignition provider is set to 'file'.
+
+ -B | --build-image *container-image*
+
+  The name of a container image to use when building the OCK boot media.  The
+  default value is 'ock-builder:latest'.
 ```
 
 ### Partition Layout
