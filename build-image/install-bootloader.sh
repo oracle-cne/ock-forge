@@ -74,7 +74,7 @@ SYSROOT="${DEPLOY}/sysroot"
 
 cat > "$DEPLOY/etc/fstab" << EOF
 UUID=$ROOT_FILESYSTEM_UUID / $FILESYSTEM defaults 0 0
-UUID=$BOOT_FILESYSTEM_UUID /boot xfs defaults 0 0
+UUID=$BOOT_FILESYSTEM_UUID /boot xfs defaults,sync 0 0
 UUID=$EFI_FILESYSTEM_UUID /boot/efi vfat defaults,uid=0,gid=0,umask=077,shortname=winnt 0 2
 EOF
 

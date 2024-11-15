@@ -195,9 +195,11 @@ TMPDIR=$(realpath $(mktemp -d))
 
 OSTREE_IMAGE_DIR=
 OSTREE_IMAGE_NAME=
+OSTREE_IMAGE_ARG=
 if [[ -n "$OSTREE_IMAGE_PATH" ]]; then
 	OSTREE_IMAGE_DIR=$(dirname "$OSTREE_IMAGE_PATH")
 	OSTREE_IMAGE_NAME=$(basename "$OSTREE_IMAGE_PATH")
+	OSTREE_IMAGE_ARG="-O $OSTREE_IMAGE_NAME"
 fi
 
 # If the builder container image does not exist, build it.
@@ -277,8 +279,8 @@ podman run --privileged -ti --rm \
 	-i "$IMAGE" \
 	$CONFIG_DIR_ARG \
 	$IGNITION_ARG \
+	$OSTREE_IMAGE_ARG \
 	-o "$OS_NAME" \
-	-O "$OSTREE_IMAGE_NAME" \
 	-p "$IGNITION_PROVIDER"
 
 # If an archive of an ostree container image was desired, unpack

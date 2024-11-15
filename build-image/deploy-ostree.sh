@@ -54,7 +54,7 @@ if [[ -n "$CONFIG_DIR" ]]; then
 	mkdir -p "$CACHE_DIR"
 
 	rpm-ostree compose tree --unified-core --cachedir="$CACHE_DIR" --repo="$OSTREE_REPO" "$CONFIG_DIR/manifest.yaml"
-	if [[ -n "$OSTREE_IMAGE_PATH" ]]; then
+	if [[ -n "$OSTREE_IMAGE_PATH" && -n "$IMAGE" ]]; then
 		IMG="docker://$IMAGE"
 		COMPARE_WITH=
 		skopeo inspect "$IMG" > /dev/null && COMPARE_WITH="--compare-with-build $IMG" || true
