@@ -85,7 +85,7 @@ GRUB_DEFAULT=saved
 GRUB_DISABLE_SUBMENU=true
 GRUB_TERMINAL="serial console"
 GRUB_SERIAL_COMMAND="serial"
-GRUB_CMDLINE_LINUX="rw ip=dhcp rd.neednet=1 ignition.platform.id=${IGNITION_PROVIDER} ignition.firstboot=1 crashkernel=auto console=ttyS0"
+GRUB_CMDLINE_LINUX="rw ip=dhcp rd.neednet=1 ignition.platform.id=${IGNITION_PROVIDER} ignition.firstboot=1 systemd.firstboot=off crashkernel=auto console=ttyS0"
 GRUB_DISABLE_RECOVERY="true"
 GRUB_ENABLE_BLSCFG=true
 EOF
@@ -123,7 +123,7 @@ OSTREE_PATH=$(echo ${MOUNT}/ostree/boot.1/ock/*/0 | tail -c +$(echo -n ${MOUNT}/
 cat > "$MOUNT/boot/loader/entries/ostree-1-ock.conf" << EOF
 title Oracle Linux Server 8.10 17 (ostree:0)
 version 1
-options rw ip=dhcp rd.neednet=1 ignition.platform.id=${IGNITION_PROVIDER} ignition.firstboot=1 crashkernel=auto console=ttyS0 root=UUID=${ROOT_FILESYSTEM_UUID} ostree=${OSTREE_PATH} rd.timeout=120
+options rw ip=dhcp rd.neednet=1 ignition.platform.id=${IGNITION_PROVIDER} ignition.firstboot=1 systemd.firstboot=off crashkernel=auto console=ttyS0 root=UUID=${ROOT_FILESYSTEM_UUID} ostree=${OSTREE_PATH} rd.timeout=120
 linux ${KERNEL_PATH_REL}
 initrd ${INITRAMFS_PATH_REL}
 EOF
