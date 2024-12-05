@@ -137,6 +137,13 @@ ock-forge
 
   The name of a container image to use when building the OCK boot media.  The
   default value is 'ock-builder:latest'.
+
+ --karg *argument*
+ --karg-append *argument*
+ --karg-delete *argument*
+
+  Arguments passed to `ostree`.  Refer to `ostree admin deploy --help` for
+  usage.  Used to control kernel arguments.
 ```
 
 ### Partition Layout
