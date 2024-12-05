@@ -9,10 +9,13 @@ MOUNT=
 DEVICE=
 IMAGE=
 CONFIG_DIR=
+IGNITION_PROVIDER=
 
 SKOPEO_TRANSPORT="oci-archive"
 OSTREE_TRANSPORT="ostree-unverified-registry"
 OSTREE_IMAGE_PATH=
+
+KARGS=()
 
 while true; do
 	case "$1" in
@@ -23,6 +26,8 @@ while true; do
 	-c | --config-dir ) CONFIG_DIR="$2"; shift; shift ;;
 	-o | --os-name ) OS_NAME="$2"; shift; shift ;;
 	-O | --ostree-image-path ) OSTREE_IMAGE_PATH="$2"; shift; shift ;;
+	-p | --provider ) IGNITION_PROVIDER="$2"; shift; shift ;;
+	--karg | --karg-append | --karg-delete ) KARGS+=("$1" "$2"); shift; shift ;;
 	esac
 done
 
@@ -68,4 +73,19 @@ else
 	exit 1
 fi
 
-ostree admin deploy --sysroot "$MOUNT" --os "$OS_NAME" "$OS_NAME"
+ROOT_DEVICE=$(blkid | grep "${DEVICE}" | grep 'LABEL="root"' | cut -f1 -d' ' | tr -d ':')
+ROOT_FILESYSTEM_UUID=$(blkid -o value -s UUID "$ROOT_DEVICE")
+
+ostree admin deploy --sysroot "$MOUNT" --os "$OS_NAME" \
+	--karg rw \
+	--karg ip=dhcp \
+	--karg rd.neednet=1 \
+	--karg ignition.platform.id=${IGNITION_PROVIDER} \
+	--karg ignition.firstboot=1 \
+	--karg systemd.firstboot=off \
+	--karg crashkernel=auto \
+	--karg console=ttyS0 \
+	--karg root=UUID=${ROOT_FILESYSTEM_UUID} \
+	--karg rd.timeout=120 \
+	"${KARGS[@]}" \
+	"$OS_NAME"

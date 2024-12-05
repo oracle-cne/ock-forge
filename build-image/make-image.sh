@@ -15,6 +15,7 @@ OSTREE_IMAGE_PATH=
 FORMAT_DISK=
 IGNITION=
 IGNITION_PROVIDER=
+KARGS=()
 
 OS_NAME=ock
 
@@ -34,6 +35,7 @@ while true; do
 	-F | --format-disk ) FORMAT_DISK=yes; shift ;;
 	-I | --ignition ) IGNITION="$2"; shift; shift ;;
 	-p | --provider ) IGNITION_PROVIDER="$2"; shift; shift ;;
+	--karg | --karg-append | --karg-delete ) KARGS+=("$1" "$2"); shift; shift ;;
 	* ) echo "$1 is not a valid agument"; exit 1 ;;
 	esac
 done
@@ -65,7 +67,7 @@ if [[ -n "$FORMAT_DISK" ]]; then
 fi
 
 ./make-mounts.sh -d "$DEVICE" -m "$MOUNT"
-./deploy-ostree.sh -d "$DEVICE" -m "$MOUNT" -i "$IMAGE" -c "$CONFIG_DIR" -o "$OS_NAME" -O "$OSTREE_IMAGE_PATH"
+./deploy-ostree.sh -d "$DEVICE" -m "$MOUNT" -i "$IMAGE" -c "$CONFIG_DIR" -o "$OS_NAME" -O "$OSTREE_IMAGE_PATH" -p "$IGNITION_PROVIDER" "${KARGS[@]}"
 ./install-bootloader.sh -d "$DEVICE" -m "$MOUNT" -o "$OS_NAME"  -f "$FILESYSTEM" -I "$IGNITION" -p "$IGNITION_PROVIDER"
 
 # Make sure that the filesystems are synced before the container exits

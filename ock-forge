@@ -19,6 +19,7 @@ SOURCE=
 BRANCH=
 IGNITION=
 IGNITION_PROVIDER=
+KARGS=()
 
 OS_NAME=ock
 
@@ -115,6 +116,13 @@ ock-forge [options] -d *device* (-i *ostree-image* | -C *directory* -c *director
   The name of a container image to use when building the OCK boot media.  The
   default value is 'ock-builder:latest'.
 
+ --karg *argument*
+ --karg-append *argument*
+ --karg-delete *argument*
+
+  Arguments passed to `ostree`.  Refer to `ostree admin deploy --help` for
+  usage.  Used to control kernel arguments.
+
  -h | --help
 
   Print this message.
@@ -140,6 +148,7 @@ while true; do
 	-B | --build-image ) BUILD_IMAGE="$2"; shift; shift ;;
 	-I | --ignition ) IGNITION="$2"; shift; shift ;;
 	-h | --help ) usage; exit 0 ;;
+	--karg | --karg-append | --karg-delete ) KARGS+=("$1" "$2"); shift; shift ;;
 	esac
 done
 
@@ -280,6 +289,7 @@ podman run --privileged -ti --rm \
 	$CONFIG_DIR_ARG \
 	$IGNITION_ARG \
 	$OSTREE_IMAGE_ARG \
+	"${KARGS[@]}" \
 	-o "$OS_NAME" \
 	-p "$IGNITION_PROVIDER"
 

@@ -120,14 +120,6 @@ KERNEL_PATH_REL=$(echo $KERNEL_PATH | tail -c +${BOOT_DIR_PATH_LEN})
 INITRAMFS_PATH_REL=$(echo $INITRAMFS_PATH | tail -c +${BOOT_DIR_PATH_LEN})
 OSTREE_PATH=$(echo ${MOUNT}/ostree/boot.1/ock/*/0 | tail -c +$(echo -n ${MOUNT}/ | wc -c))
 
-cat > "$MOUNT/boot/loader/entries/ostree-1-ock.conf" << EOF
-title Oracle Linux Server 8.10 17 (ostree:0)
-version 1
-options rw ip=dhcp rd.neednet=1 ignition.platform.id=${IGNITION_PROVIDER} ignition.firstboot=1 systemd.firstboot=off crashkernel=auto console=ttyS0 root=UUID=${ROOT_FILESYSTEM_UUID} ostree=${OSTREE_PATH} rd.timeout=120
-linux ${KERNEL_PATH_REL}
-initrd ${INITRAMFS_PATH_REL}
-EOF
-
 cat /usr/lib/bootupd/grub2-static/grub-static-pre.cfg /usr/lib/bootupd/grub2-static/grub-static-efi.cfg /usr/lib/bootupd/grub2-static/grub-static-post.cfg > "${MOUNT}/boot/efi/EFI/redhat/grub.cfg"
 
 # If there is an ignition file, embed it into the initramfs
