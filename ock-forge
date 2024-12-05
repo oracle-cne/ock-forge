@@ -19,6 +19,7 @@ SOURCE=
 BRANCH=
 IGNITION=
 IGNITION_PROVIDER=
+KARGS=()
 
 OS_NAME=ock
 
@@ -140,6 +141,7 @@ while true; do
 	-B | --build-image ) BUILD_IMAGE="$2"; shift; shift ;;
 	-I | --ignition ) IGNITION="$2"; shift; shift ;;
 	-h | --help ) usage; exit 0 ;;
+	--karg* ) KARGS+=("$1" "$2"); shift; shift ;;
 	esac
 done
 
@@ -280,6 +282,7 @@ podman run --privileged -ti --rm \
 	$CONFIG_DIR_ARG \
 	$IGNITION_ARG \
 	$OSTREE_IMAGE_ARG \
+	"${KARGS[@]}" \
 	-o "$OS_NAME" \
 	-p "$IGNITION_PROVIDER"
 
