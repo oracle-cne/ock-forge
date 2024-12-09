@@ -149,6 +149,7 @@ while true; do
 	-I | --ignition ) IGNITION="$2"; shift; shift ;;
 	-h | --help ) usage; exit 0 ;;
 	--karg | --karg-append | --karg-delete ) KARGS+=("$1" "$2"); shift; shift ;;
+	*) usage; exit 1 ;;
 	esac
 done
 
