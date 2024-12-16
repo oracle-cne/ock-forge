@@ -110,6 +110,8 @@ mount --rbind "$MOUNT" "$SYSROOT"
 cp -rn "$DEPLOY/usr/lib/ostree-boot/efi" "$MOUNT/boot"
 cp -rn "$DEPLOY/usr/lib/ostree-boot/grub2" "$MOUNT/boot"
 
+mv "$MOUNT/boot/loader/entries/ostree-1.conf" "$MOUNT/boot/loader/entries/ostree-1-ock.conf"
+
 # Count on shell expansion to get the right kernel and initramfs.  Since
 # there is only one kernel per ostree commit, this should be okay?
 BOOT_DIR_PATH_LEN=$(realpath $(echo ${MOUNT}/boot/) | wc -c)
