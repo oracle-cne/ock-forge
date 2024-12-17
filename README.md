@@ -126,7 +126,10 @@ ock-forge
  -p | --provider *ignition-provider*
 
   Set the ignition provider.  The default value is 'qemu'.  If -I is used to
-  embed an ignition file, the default value is 'file'.
+  embed an ignition file, the default value is 'file'.  OCK supports a
+  provider that is not documented in public Ignition documentation.  The 'oci'
+  provider in OCK reads ignition from the 'user_data' field in the instance
+  metadata service accessible on an OCI compute instance.
 
  -I | --ignition *path*
 
