@@ -135,6 +135,8 @@ ock-forge
 
   The path to an ignition file.  This file is embeded into the initramfs on
   the deployment.  If -p is not given, the ignition provider is set to 'file'.
+  This option usually used for installing directly to a system running this tool
+  from a live distribution.
 
  -B | --build-image *container-image*
 
