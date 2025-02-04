@@ -123,6 +123,14 @@ INITRAMFS_PATH_REL=$(echo $INITRAMFS_PATH | tail -c +${BOOT_DIR_PATH_LEN})
 OSTREE_PATH=$(echo ${MOUNT}/ostree/boot.1/ock/*/0 | tail -c +$(echo -n ${MOUNT}/ | wc -c))
 
 cat /usr/lib/bootupd/grub2-static/grub-static-pre.cfg /usr/lib/bootupd/grub2-static/grub-static-efi.cfg /usr/lib/bootupd/grub2-static/grub-static-post.cfg > "${MOUNT}/boot/efi/EFI/redhat/grub.cfg"
+cat >> "${MOUNT}/boot/efi/EFI/redhat/grub.cfg" << EOF
+if [ -n "\${GRUB2_PASSWORD}" ]; then
+  set superusers="root"
+  export superusers
+  password_pbkdf2 root \${GRUB2_PASSWORD}
+fi
+EOF
+chmod 0600 "${MOUNT}/boot/efi/EFI/redhat/grub.cfg"
 
 # If there is an ignition file, embed it into the initramfs
 if [ -n "$IGNITION" ]; then
