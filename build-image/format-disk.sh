@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Copyright (c) 2024, Oracle and/or its affiliates.
+# Copyright (c) 2024,2025 Oracle and/or its affiliates.
 # Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
 set -e
 set -x
@@ -36,6 +36,6 @@ BOOT_DEVICE=$(blkid | grep "${DEVICE}" | grep 'PARTLABEL="boot"' | cut -f1 -d' '
 
 # Make filesystems
 mkfs.fat -F 32 -n "$EFI_PARTITION_LABEL" "$EFI_DEVICE"
-mkfs.xfs -f -m bigtime=0 -L "$BOOT_PARTITION_LABEL" "$BOOT_DEVICE"
-"mkfs.$FILESYSTEM" -f -L "$ROOT_PARTITION_LABEL" "$ROOT_DEVICE"
+mkfs.xfs -f -m bigtime=0,inobtcount=0,reflink=0 -L "$BOOT_PARTITION_LABEL" "$BOOT_DEVICE"
+"mkfs.$FILESYSTEM" -f -m bigtime=0,inobtcount=0,reflink=0 -L "$ROOT_PARTITION_LABEL" "$ROOT_DEVICE"
 
