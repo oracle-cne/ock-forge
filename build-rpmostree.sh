@@ -34,6 +34,7 @@ sed -i '/Patch4: 0004-core-also-wrap-kernel-install-for-scriptlets.patch/a Patch
 
 # Install build dependencies
 yum-builddep -y --enablerepo '*' ~/rpmbuild/SPECS/rpm-ostree.spec
+dnf install libxslt-1.1.34-9.0.1.el9_5.1
 
 # Build the patched RPM
 rpmbuild -ba ~/rpmbuild/SPECS/rpm-ostree.spec
