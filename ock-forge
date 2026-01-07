@@ -23,7 +23,7 @@ KARGS=()
 
 OS_NAME=ock
 
-BUILD_IMAGE=ock-builder:latest
+BUILD_IMAGE=containers-storage:ock-builder:latest
 
 usage() {
 	cat << EOF
