@@ -4,8 +4,7 @@ ARG ARCH
 ADD rpm-ostree-debuginfo-2024.3-4.el9.$ARCH.rpm rpm-ostree-devel-2024.3-4.el9.$ARCH.rpm rpm-ostree-libs-debuginfo-2024.3-4.el9.$ARCH.rpm rpm-ostree-2024.3-4.el9.$ARCH.rpm rpm-ostree-debugsource-2024.3-4.el9.$ARCH.rpm rpm-ostree-libs-2024.3-4.el9.$ARCH.rpm /
 RUN dnf install --enablerepo='*' /rpm-ostree* && \
     dnf install skopeo \
-		ostree \
-		bootupd \
+		bootupd-0.2.27 \
 		xfsprogs \
 		dosfstools \
 		qemu-img \
