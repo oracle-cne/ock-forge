@@ -72,6 +72,8 @@ SYSROOT="${DEPLOY}/sysroot"
 # - tmpfs
 # - bootloader config
 
+mkdir -p "$DEPLOY/etc"
+chmod 755 "$DEPLOY/etc"
 cat > "$DEPLOY/etc/fstab" << EOF
 UUID=$ROOT_FILESYSTEM_UUID / $FILESYSTEM defaults 0 0
 UUID=$BOOT_FILESYSTEM_UUID /boot xfs defaults,sync 0 0

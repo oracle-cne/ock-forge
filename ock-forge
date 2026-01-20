@@ -8,6 +8,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 DEVICE=
 DISK=
+DISK_IMAGE=
 FILESYSTEM=xfs
 IMAGE=
 CONFIG_DIR=
@@ -40,6 +41,12 @@ ock-forge [options] -d *device* (-i *ostree-image* | -C *directory* -c *director
   The path to a disk image file.  This values is only necessary if the
   installation target is actually a file rather than a raw device.  This file
   is attached to the device specified with -d.
+
+ -DI | --disk-image *container-image*
+
+  A fully qualified container image name, including the tag.  Saves the disk
+  image in this image as is expected by various `ocne` commands that manipulate
+  boot media.
 
  -f | --filesystem *filesystem*
 
@@ -139,6 +146,7 @@ while true; do
 	"") break;;
 	-d | --device ) DEVICE="$2"; shift; shift ;;
 	-D | --disk ) DISK="$2"; shift; shift ;;
+	-DI | --disk-image ) DISK_IMAGE="$2"; shift; shift ;;
 	-f | --filesystem ) FILESYSTEM="$2"; shift; shift ;;
 	-s | --source ) SOURCE="$2"; shift; shift; ;;
 	-b | --branch ) BRANCH="$2"; shift; shift ;;
@@ -318,5 +326,18 @@ if [[ -n "$CLEAN" ]]; then
 		losetup -d "$DEVICE"
 	fi
 fi
+
+# If a container image with the boot media is desired, package it up.
+if [[ -n "$DISK_IMAGE" ]]; then
+	DI_FILE=$(basename "$DISK")
+	DI_DIR=$(dirname "$DISK")
+	DOCKERFILE=$(cat << EOF
+FROM scratch
+COPY $DI_FILE /disk/boot.qcow2
+EOF
+)
+	podman build -t "$DISK_IMAGE" -f <(echo "$DOCKERFILE") "$DI_DIR"
+fi
+
 
 popd
