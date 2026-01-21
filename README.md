@@ -63,6 +63,12 @@ ock-forge
   installation target is actually a file rather than a raw device.  This file
   is attached to the device specified with -d.
 
+ -DI | --disk-image *container-image*
+
+  A fully qualified container image name, including the tag.  Saves the disk
+  image in this image as is expected by various `ocne` commands that manipulate
+  boot media.
+
  -f | --filesystem *filesystem*
 
   The filesystem to use when formatting the root partition.  Only xfs is
@@ -238,6 +244,15 @@ Install using an existing ostree container image as a source.
 
 ```
 # ock-forge -d /dev/nbd0 -d /dev/loop0 -D out/1.30/boot.iso -i container-registry.oracle.com/olcne/ock-ostree:1.30 -P
+```
+
+#### Generate a Container Image with Boot Media
+
+Do a typical build for a `qcow2` image, and also generate a container image
+with that image.
+
+```
+# ock-forge -d /dev/nbd0 -D out/1.30/boot.qcow2 -i container-registry.oracle.com/olcne/ock-ostree:1.30 -O ./out/1.30/archive.tar -C ./ock -c configs/config-1.30 -P -DI container-registry.oracle.com/olcne/ock:1.30
 ```
 
 ## Other Utilities
